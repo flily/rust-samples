@@ -37,8 +37,14 @@ fn main() {
         
     } else {
         for file in files {
-            let mut fd = std::fs::File::open(file).expect("open file failed");
-            concat_file(&mut fd, &mut output);
+            let fd = std::fs::File::open(&file);
+            if fd.is_err() {
+                eprintln!("open file '{}' error: {}", file, fd.unwrap_err());
+                continue;
+            }
+
+            let mut input = fd.unwrap();
+            concat_file(&mut input, &mut output);
         }
     }
 }
