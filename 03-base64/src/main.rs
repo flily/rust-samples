@@ -51,6 +51,33 @@ fn do_encode(input: &mut dyn Read, output: &mut dyn Write) {
     _ = output.write(b"\n");
 }
 
+fn do_decode(input: &mut dyn Read, output: &mut dyn Write) {
+    let buffer_size = 16 * 1024;
+    let mut buffer: Vec<u8> = vec![0; buffer_size];
+
+    loop {
+        let r = input.read(&mut buffer);
+        if r.is_err() {
+            eprintln!("read error: {}", r.unwrap_err());
+            break;
+        }
+
+        let size = r.unwrap();
+        if size <= 0 {
+            break;
+        }
+
+        let decoded = base64::base64_decode(&buffer[0..size]);
+        let wr = output.write(&decoded);
+        if wr.is_err() {
+            eprintln!("write error: {}", wr.unwrap_err());
+            break;
+        }
+    }
+
+    _ = output.write(b"\n");
+}
+
 fn main() {
     let args = Args::parse();
 
@@ -80,7 +107,10 @@ fn main() {
         Box::new(fd.unwrap())
     };
 
-    if args.encode {
+    if args.decode {
+        do_decode(&mut input, &mut output)
+
+    } else if args.encode {
         do_encode(&mut input, &mut output);
 
     } else {
