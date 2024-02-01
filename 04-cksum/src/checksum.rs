@@ -13,6 +13,7 @@ pub fn create_bsd_checksum() -> Box<dyn Checksum> {
     return Box::new(calc);
 }
 
+#[cfg(test)]
 mod bsd_sum_tests {
     use super::create_bsd_checksum;
 

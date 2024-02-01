@@ -46,7 +46,7 @@ fn main() {
         return;
     }
 
-    let mut create_algo = match args.option {
+    let create_algo = match args.option {
         0 => checksum::create_posix_checksum,
         1 => checksum::create_bsd_checksum,
         2 => checksum::create_att_checksum,
