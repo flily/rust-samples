@@ -30,20 +30,21 @@ fn do_encode(input: &mut dyn Read, output: &mut dyn Write) {
 
     loop {
         let r = input.read(&mut buffer);
-        if r.is_err() {
-            eprintln!("read error: {}", r.unwrap_err());
-            break;
-        }
-
-        let size = r.unwrap();
-        if size <= 0 {
+        let size = match r {
+            Ok(size) => size,
+            Err(e) => {
+                eprintln!("read error: {}", e);
+                break;
+            }
+        };
+        if size == 0 {
             break;
         }
 
         let encoded = base64::base64_encode(&buffer[0..size]);
         let wr = output.write(&encoded);
-        if wr.is_err() {
-            eprintln!("write error: {}", wr.unwrap_err());
+        if let Err(e) = wr {
+            eprintln!("write error: {}", e);
             break;
         }
     }
@@ -57,20 +58,21 @@ fn do_decode(input: &mut dyn Read, output: &mut dyn Write) {
 
     loop {
         let r = input.read(&mut buffer);
-        if r.is_err() {
-            eprintln!("read error: {}", r.unwrap_err());
-            break;
-        }
-
-        let size = r.unwrap();
-        if size <= 0 {
+        let size = match r {
+            Ok(size) => size,
+            Err(e) => {
+                eprintln!("read error: {}", e);
+                break;
+            }
+        };
+        if size == 0 {
             break;
         }
 
         let decoded = base64::base64_decode(&buffer[0..size]);
         let wr = output.write(&decoded);
-        if wr.is_err() {
-            eprintln!("write error: {}", wr.unwrap_err());
+        if let Err(e) = wr {
+            eprintln!("write error: {}", e);
             break;
         }
     }
@@ -87,8 +89,8 @@ fn main() {
 
     } else {
         let fd = std::fs::File::open(&input_filename);
-        if fd.is_err() {
-            eprintln!("open file '{}' error: {}", &input_filename, fd.unwrap_err());
+        if let Err(e) = fd {
+            eprintln!("open file '{}' error: {}", &input_filename, e);
             return;
         }
         Box::new(fd.unwrap())
@@ -100,8 +102,8 @@ fn main() {
 
     } else {
         let fd = std::fs::File::create(&output_filename);
-        if fd.is_err() {
-            eprintln!("create file '{}' error: {}", &output_filename, fd.unwrap_err());
+        if let Err(e) = fd {
+            eprintln!("create file '{}' error: {}", &output_filename, e);
             return;
         }
         Box::new(fd.unwrap())

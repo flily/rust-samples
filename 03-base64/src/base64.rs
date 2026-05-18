@@ -18,7 +18,7 @@ pub fn base64_encode(input: &[u8]) -> Vec<u8> {
         }
         let mut last = 0;
 
-        let i0 = input[3 * i + 0];
+        let i0 = input[3 * i];
         let i1 = if 3 * i + 1 >= input_length {
             last += 1;
             0
@@ -42,19 +42,19 @@ pub fn base64_encode(input: &[u8]) -> Vec<u8> {
         let o2 = ((i1 & 0x0f) << 2) | ((i2 & 0xc0) >> 6);
         let o3 = i2 & 0x3f;
 
-        output[4 * i + 0] = BASE64_CHARS[o0 as usize];
+        output[4 * i] = BASE64_CHARS[o0 as usize];
         output[4 * i + 1] = BASE64_CHARS[o1 as usize];
         output[4 * i + 2] = BASE64_CHARS[o2 as usize];
         output[4 * i + 3] = BASE64_CHARS[o3 as usize];
         if last > 0 {
-            output[4 * i + 3] = '=' as u8;
+            output[4 * i + 3] = b'=';
             if last > 1 {
-                output[4 * i + 2] = '=' as u8;
+                output[4 * i + 2] = b'=';
             }
         }
     }
 
-    output.into()
+    output
 }
 
 
@@ -73,9 +73,9 @@ static BASE64_DECODE_MAP: &[u8] = &[
 pub fn base64_decode(input: &[u8]) -> Vec<u8> {
     let input_length : usize = input.len();
     let output_blocks: usize = input_length / 4;
-    let output_length: usize = if input[input_length - 2] == '=' as u8 {
+    let output_length: usize = if input[input_length - 2] == b'=' {
         output_blocks * 3 - 2
-    } else if input[input_length - 1] == '=' as u8 {
+    } else if input[input_length - 1] == b'=' {
         output_blocks * 3 - 1
     } else {
         output_blocks * 3
@@ -83,7 +83,7 @@ pub fn base64_decode(input: &[u8]) -> Vec<u8> {
 
     let mut output = vec![0; output_length];
     for i in 0..output_blocks {
-        let c0 = input[4 * i + 0];
+        let c0 = input[4 * i];
         let c1 = input[4 * i + 1];
         let c2 = input[4 * i + 2];
         let c3 = input[4 * i + 3];
@@ -97,17 +97,17 @@ pub fn base64_decode(input: &[u8]) -> Vec<u8> {
         let o1 = ((i1 & 0x0f) << 4) | (i2 >> 2);
         let o2 = ((i2 & 0x03) << 6) | i3;
 
-        output[3 * i + 0] = o0;
-        if c2 != '=' as u8{
+        output[3 * i] = o0;
+        if c2 != b'=' {
             output[3 * i + 1] = o1;
         }
 
-        if c3 != '=' as u8{
+        if c3 != b'=' {
             output[3 * i + 2] = o2;
         }
     }
 
-    return output;
+    output
 }
 
 #[cfg(test)]
@@ -135,17 +135,17 @@ mod tests {
     #[test]
     fn test_base64_decode() {
         let case = "AAAA".as_bytes();
-        let got = base64_decode(&case);
+        let got = base64_decode(case);
         let expected = vec![0x00, 0x00, 0x00];
         assert_eq!(got, expected);
 
         let case = "AAA=".as_bytes();
-        let got = base64_decode(&case);
+        let got = base64_decode(case);
         let expected = vec![0x00, 0x00];
         assert_eq!(got, expected);
 
         let case = "AA==".as_bytes();
-        let got = base64_decode(&case);
+        let got = base64_decode(case);
         let expected = vec![0x00];
         assert_eq!(got, expected);
     }

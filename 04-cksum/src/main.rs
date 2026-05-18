@@ -21,13 +21,14 @@ fn checksum_file(input: &mut dyn Read, algo: &mut dyn Checksum) -> (u32, usize) 
 
     loop {
         let r = input.read(&mut buffer);
-        if r.is_err() {
-            eprintln!("read error: {}", r.unwrap_err());
-            break;
-        }
-
-        let size = r.unwrap();
-        if size <= 0 {
+        let size = match r {
+            Ok(size) => size,
+            Err(e) => {
+                eprintln!("read error: {}", e);
+                break;
+            }
+        };
+        if size == 0 {
             break;
         }
 
@@ -36,7 +37,7 @@ fn checksum_file(input: &mut dyn Read, algo: &mut dyn Checksum) -> (u32, usize) 
     }
 
     let sum = algo.checksum();
-    return (sum, length);
+    (sum, length)
 }
 
 fn main() {
@@ -47,14 +48,14 @@ fn main() {
     }
 
     let create_algo = match args.option {
-        0 => checksum::create_posix_checksum,
-        1 => checksum::create_bsd_checksum,
-        2 => checksum::create_att_checksum,
-        3 => checksum::create_iso_checksum,
-        _ => checksum::create_posix_checksum,
+        0 => checksum::PosixSum::build,
+        1 => checksum::BSDSum::build,
+        2 => checksum::ATTSum::build,
+        3 => checksum::ISOSum::build,
+        _ => checksum::PosixSum::build,
     };
 
-    if args.files.len()>0 {
+    if !args.files.is_empty() {
         for file in args.files {
             let mut input = std::fs::File::open(&file).unwrap();
             let mut algo = create_algo();

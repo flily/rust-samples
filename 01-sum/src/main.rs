@@ -10,8 +10,8 @@ fn main() {
 
         let content = line.unwrap(); 
         let num_result = content.parse::<i32>();
-        if num_result.is_ok() {
-            sum += num_result.unwrap();
+        if let Ok(num) = num_result {
+            sum += num;
         } else {
             eprintln!("invalid format number: {}", content);
         }

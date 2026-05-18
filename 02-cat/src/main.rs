@@ -6,40 +6,43 @@ fn concat_file(input: &mut dyn Read, out: &mut dyn Write) -> i32 {
 
     loop {
         let r = input.read(&mut buffer);
-        if r.is_err() {
-            eprintln!("read error: {}", r.unwrap_err());
-            break;
-        }
-
-        let size = r.unwrap();
+        let size = match r {
+            Ok(size) => {
+                size
+            }
+            Err(e) => {
+                eprintln!("read error: {}", e);
+                break;
+            }
+        };
         if size == 0 {
             break;
         }
 
         count += size as i32;
-        let wr = out.write(&mut buffer[0..size]);
-        if wr.is_err() {
-            eprintln!("write error: {}", wr.unwrap_err());
+        let wr = out.write(&buffer[0..size]);
+        if let Err(e) = wr {
+            eprintln!("write error: {}", e);
             break;
         }
     }
 
-    return count;
+    count
 }
 
 fn main() {
     let mut output = std::io::stdout();
     let files = std::env::args().skip(1);
 
-    if files.len() <= 0 {
+    if files.len() == 0 {
         let mut input = std::io::stdin();
         concat_file(&mut input, &mut output);
         
     } else {
         for file in files {
             let fd = std::fs::File::open(&file);
-            if fd.is_err() {
-                eprintln!("open file '{}' error: {}", file, fd.unwrap_err());
+            if let Err(e) = fd {
+                eprintln!("open file '{}' error: {}", file, e);
                 continue;
             }
 

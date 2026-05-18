@@ -1,4 +1,4 @@
-use crate::checksum::Checksum;
+use super::Checksum;
 
 static POSIX_CRC_TABLE: &[u32] = &[
     0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc, 0x17c56b6b, 0x1a864db2, 0x1e475005,
@@ -47,6 +47,10 @@ impl PosixSum {
 }
 
 impl Checksum for PosixSum {
+    fn build() -> Box<dyn Checksum> {
+        Box::new(PosixSum::new())
+    }
+
     fn checksum(&self) -> u32 {
         let mut length = self.length;
         let mut sum = self.sum;

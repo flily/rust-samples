@@ -1,4 +1,4 @@
-use crate::checksum::Checksum;
+use super::Checksum;
 
 pub struct BSDSum {
     sum: u32,
@@ -11,6 +11,10 @@ impl BSDSum {
 }
 
 impl Checksum for BSDSum {
+    fn build() -> Box<dyn Checksum> {
+        Box::new(BSDSum::new())
+    }
+
     fn checksum(&self) -> u32 {
         self.sum
     }
@@ -24,7 +28,7 @@ impl Checksum for BSDSum {
         }
 
         self.sum = s;
-        return data.len();
+        data.len()
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::checksum::Checksum;
+use super::Checksum;
 
 static CRC32_ISO_TABLE: &[u32] = &[
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3,
@@ -46,6 +46,10 @@ impl ISOSum {
 }
 
 impl Checksum for ISOSum {
+    fn build() -> Box<dyn Checksum> {
+        Box::new(ISOSum::new())
+    }
+
     fn checksum(&self) -> u32 {
         !self.sum
     }
@@ -58,7 +62,7 @@ impl Checksum for ISOSum {
         }
 
         self.sum = crc;
-        return data.len();
+        data.len()
     }
 }
 

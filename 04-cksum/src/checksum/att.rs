@@ -1,4 +1,4 @@
-use crate::checksum::Checksum;
+use super::Checksum;
 
 pub struct ATTSum {
     sum: u64,
@@ -11,6 +11,10 @@ impl ATTSum {
 }
 
 impl Checksum for ATTSum {
+    fn build() -> Box<dyn Checksum> {
+        Box::new(ATTSum::new())
+    }
+
     fn checksum(&self) -> u32 {
         let lo: u64 = self.sum & 0x0000ffff;
         let hi: u64 = (self.sum & 0xffff0000) >> 16;
@@ -24,7 +28,7 @@ impl Checksum for ATTSum {
             s += b as u64;
         }
         self.sum += s;
-        return data.len();
+        data.len()
     }
 }
 
